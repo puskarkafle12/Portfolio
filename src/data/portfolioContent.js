@@ -4,22 +4,29 @@ export const featuredProjects = [
   {
     title: 'Multimodal Stress Prediction Research',
     summary:
-      'Graduate research from my first semester at Texas Tech University focused on multimodal stress prediction using wearable data and machine learning.',
+      'Multimodal stress prediction from wearable data using machine learning.',
     tech: 'Python, Multimodal AI, Graduate Research',
     link: 'https://github.com/puskarkafle12/multimodal-stress-detection-from-wearables',
     featured: true,
   },
   {
+    title: 'Soil Carbon Estimation Using a Dilated Convolutional Network',
+    summary:
+      'PVAMU SOC estimation with Dilated CNN (Prof. Yonghui Wang); improved training with Huber loss + tiered weighting + RobustScaler; low-SOC MAE 0.32 (46% lower).',
+    tech: 'Python, Dilated CNN, Huber Loss, RobustScaler, Tiered Loss Weighting',
+    featured: true,
+  },
+  {
     title: 'Bulk IPO Workflow Automation',
     summary:
-      'High-impact IPO workflow automation platform focused on speed, reliability, and scalable execution flows.',
+      'IPO workflow automation to improve speed, reliability, and scalable execution.',
     tech: 'JavaScript, Automation',
     link: 'https://github.com/puskarkafle12/bulk-ipo',
   },
   {
     title: 'Stock Market Prediction (RNN / LSTM)',
     summary:
-      'Stock market forecasting project exploring RNN and LSTM approaches for predictive modeling.',
+      'RNN/LSTM time-series model for stock market forecasting.',
     tech: 'Python, Deep Learning, Time-Series',
     link: 'https://github.com/puskarkafle12/stock_market_prediction',
   },

@@ -15,7 +15,7 @@ export function HeroSection({ theme }) {
       </p>
       <div className="contact-strip">
         <span>Prairie View, TX</span>
-        <span>+1 (806) 441-9487</span>
+        <a href="tel:+18064419487">+1 (806) 441-9487</a>
         <a href="mailto:puskarkafle2031@gmail.com">puskarkafle2031@gmail.com</a>
         <a href={LINKEDIN_URL} target="_blank" rel="noreferrer">
           linkedin.com/in/puskarkafle

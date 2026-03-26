@@ -15,18 +15,10 @@ function typeLabel(type) {
 
 export function ExperienceSection() {
   const [activeTab, setActiveTab] = useState('work')
-  const [query, setQuery] = useState('')
 
   const filtered = useMemo(() => {
-    const value = query.trim().toLowerCase()
-    return timelineData.filter((item) => {
-      if (item.type !== activeTab) return false
-      if (!value) return true
-      const hay = `${item.title} ${item.org} ${item.location} ${item.stack} ${item.bullets.join(' ')}`
-        .toLowerCase()
-      return hay.includes(value)
-    })
-  }, [activeTab, query])
+    return timelineData.filter((item) => item.type === activeTab)
+  }, [activeTab])
 
   return (
     <section id="experience" className="section reveal">
@@ -35,13 +27,6 @@ export function ExperienceSection() {
           <p className="section-label">Career</p>
           <h2>Experience & Education</h2>
         </div>
-        <input
-          type="search"
-          placeholder="Search roles, schools, skills…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Filter experience and education"
-        />
       </div>
 
       <div className="tabs" role="tablist" aria-label="Timeline category">
@@ -61,7 +46,7 @@ export function ExperienceSection() {
 
       <div className="timeline">
         {filtered.length === 0 ? (
-          <p className="empty">No entries match your search.</p>
+          <p className="empty">No entries available.</p>
         ) : (
           filtered.map((item, idx) => (
             <article className="card" key={`${item.org}-${item.date}-${idx}`}>

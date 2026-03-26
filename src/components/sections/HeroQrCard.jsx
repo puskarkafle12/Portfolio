@@ -15,7 +15,8 @@ function QrBlock({ value, size, theme, level = 'M' }) {
         level={level}
         marginSize={3}
         title=""
-        bgColor={theme === 'dark' ? '#0d1830' : '#ffffff'}
+        // Forcefully transparent background (avoid QR library defaulting to white)
+        bgColor={theme === 'dark' ? '#00000000' : '#ffffff00'}
         fgColor={theme === 'dark' ? '#f8fbff' : '#2e1065'}
       />
     </QRCodeErrorBoundary>
