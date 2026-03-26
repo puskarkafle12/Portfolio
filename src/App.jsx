@@ -1,7 +1,19 @@
 import { Component, useEffect, useMemo, useRef, useState } from 'react'
 import portfolioLogo from './assets/portfolio-logo.svg'
-import resumePdf from '../resume/Puskar Kafle Resume.pdf'
 import { QRCodeSVG } from 'qrcode.react'
+
+const LINKEDIN_URL = 'https://www.linkedin.com/in/puskarkafle'
+const GITHUB_URL = 'https://github.com/puskarkafle12'
+
+const getResumeAssetUrl = () =>
+  new URL(`${import.meta.env.BASE_URL}Puskar-Kafle-Resume.pdf`, window.location.href).href
+
+const getPortfolioQrUrl = () => {
+  if (typeof window === 'undefined') return ''
+  const { origin, pathname, hash } = window.location
+  const path = pathname.replace(/\/index\.html?$/i, '') || '/'
+  return `${origin}${path}${hash || ''}`
+}
 
 const layerConfig = [6, 10, 14, 18, 18, 14, 10, 6]
 
@@ -123,6 +135,7 @@ function App() {
   const [gameMessage, setGameMessage] = useState('')
   const [gamePulseValue, setGamePulseValue] = useState(0)
   const [gameDropoutCount, setGameDropoutCount] = useState(0)
+  const [activeQr, setActiveQr] = useState('resume')
   const triggerForwardPassRef = useRef(null)
   const droppedCountRef = useRef(0)
   const gamePassStartRef = useRef(0)
@@ -152,10 +165,52 @@ function App() {
     ],
     [],
   )
-  const resumeQrValue =
-    typeof window === 'undefined'
-      ? resumePdf
-      : new URL(resumePdf, window.location.origin).toString()
+  const resumeQrValue = useMemo(
+    () => (typeof window === 'undefined' ? '' : getResumeAssetUrl()),
+    [],
+  )
+  const portfolioQrValue = useMemo(
+    () => (typeof window === 'undefined' ? '' : getPortfolioQrUrl()),
+    [],
+  )
+
+  const qrByKind = useMemo(
+    () => ({
+      resume: {
+        eyebrow: 'Résumé PDF',
+        heading: 'Scan to download',
+        description:
+          'Point your camera at the code to open or save the latest résumé PDF on your phone.',
+        hint: 'Links to the PDF hosted on this site.',
+        value: resumeQrValue,
+      },
+      linkedin: {
+        eyebrow: 'LinkedIn',
+        heading: 'Scan for LinkedIn',
+        description: 'Opens linkedin.com/in/puskarkafle — share your profile without typing the URL.',
+        hint: 'Opens the LinkedIn profile in a browser.',
+        value: LINKEDIN_URL,
+      },
+      github: {
+        eyebrow: 'GitHub',
+        heading: 'Scan for GitHub',
+        description: 'Opens github.com/puskarkafle12 — jump straight to repos and contributions.',
+        hint: 'Opens the GitHub profile in a browser.',
+        value: GITHUB_URL,
+      },
+      portfolio: {
+        eyebrow: 'This portfolio',
+        heading: 'Scan for this site',
+        description:
+          'Share this portfolio URL in person — ideal for cards, posters, or event handouts.',
+        hint: 'Opens this page in the browser.',
+        value: portfolioQrValue || (typeof window !== 'undefined' ? window.location.href : ''),
+      },
+    }),
+    [resumeQrValue, portfolioQrValue],
+  )
+
+  const currentQr = qrByKind[activeQr] ?? qrByKind.resume
   const quickContactItems = [
     {
       id: 'email',
@@ -174,7 +229,7 @@ function App() {
       id: 'linkedin',
       label: 'LinkedIn',
       value: 'linkedin.com/in/puskarkafle',
-      href: 'https://linkedin.com/in/puskarkafle',
+      href: LINKEDIN_URL,
     },
   ]
   const featuredProjects = [
@@ -1010,16 +1065,16 @@ function App() {
       frameId = window.requestAnimationFrame(draw)
     }
 
-    const onMove = (event) => {
+    const onPointerMove = (event) => {
       pointer.x = event.clientX / Math.max(1, width)
       pointer.y = event.clientY / Math.max(1, height)
       pointer.active = true
     }
-    const onLeave = () => {
+    const onPointerLeave = () => {
       pointer.active = false
     }
-    const onClick = (event) => {
-      // Trigger a full forward-pass wave + new dropout mask
+    const onPointerDown = (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return
       passStart = performance.now()
       passId += 1
       rerollDropout()
@@ -1034,16 +1089,16 @@ function App() {
     rerollDropout()
     draw()
     window.addEventListener('resize', resize)
-    container.addEventListener('mousemove', onMove)
-    container.addEventListener('mouseleave', onLeave)
-    container.addEventListener('click', onClick)
+    container.addEventListener('pointermove', onPointerMove)
+    container.addEventListener('pointerleave', onPointerLeave)
+    container.addEventListener('pointerdown', onPointerDown)
 
     return () => {
       window.cancelAnimationFrame(frameId)
       window.removeEventListener('resize', resize)
-      container.removeEventListener('mousemove', onMove)
-      container.removeEventListener('mouseleave', onLeave)
-      container.removeEventListener('click', onClick)
+      container.removeEventListener('pointermove', onPointerMove)
+      container.removeEventListener('pointerleave', onPointerLeave)
+      container.removeEventListener('pointerdown', onPointerDown)
     }
   }, [theme, showContent])
 
@@ -1130,6 +1185,29 @@ function App() {
       window.setTimeout(() => setCopiedField(''), 1500)
     } catch {
       setCopiedField('')
+    }
+  }
+
+  const resumeHref = `${import.meta.env.BASE_URL}Puskar-Kafle-Resume.pdf`
+
+  const handleResumeDownload = async (event) => {
+    event?.preventDefault()
+    const url = getResumeAssetUrl()
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error('Download failed')
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = blobUrl
+      anchor.download = 'Puskar-Kafle-Resume.pdf'
+      anchor.style.display = 'none'
+      document.body.appendChild(anchor)
+      anchor.click()
+      document.body.removeChild(anchor)
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 2500)
+    } catch {
+      window.open(url, '_blank', 'noopener,noreferrer')
     }
   }
 
@@ -1252,7 +1330,7 @@ function App() {
               Skills
             </a>
             <a
-              href="https://linkedin.com/in/puskarkafle"
+              href={LINKEDIN_URL}
               target="_blank"
               rel="noreferrer"
               className="nav-social"
@@ -1264,7 +1342,7 @@ function App() {
               </svg>
             </a>
             <a
-              href="https://github.com/puskarkafle12"
+              href={GITHUB_URL}
               target="_blank"
               rel="noreferrer"
               className="nav-social"
@@ -1276,10 +1354,12 @@ function App() {
               </svg>
             </a>
             <a
-              href={resumePdf}
-              download="Puskar-Kafle-Resume.pdf"
+              href={resumeHref}
               className="nav-download"
-              onClick={() => setMenuOpen(false)}
+              onClick={(e) => {
+                handleResumeDownload(e)
+                setMenuOpen(false)
+              }}
             >
               Download CV
             </a>
@@ -1311,7 +1391,7 @@ function App() {
               puskarkafle2031@gmail.com
             </a>
             <a
-              href="https://linkedin.com/in/puskarkafle"
+              href={LINKEDIN_URL}
               target="_blank"
               rel="noreferrer"
             >
@@ -1319,11 +1399,7 @@ function App() {
             </a>
           </div>
           <div className="hero-actions">
-            <a
-              href={resumePdf}
-              download="Puskar-Kafle-Resume.pdf"
-              className="btn btn-primary"
-            >
+            <a href={resumeHref} className="btn btn-primary" onClick={handleResumeDownload}>
               Download Resume
             </a>
             <a href="#contact" className="btn btn-ghost">
@@ -1333,20 +1409,62 @@ function App() {
           </div>
           <div className="resume-qr-card">
             <div className="resume-qr-meta">
-              <p className="section-label">Quick Download</p>
-              <h3>Scan to Download Resume</h3>
-              <p>Open your camera, scan the QR code, and save the latest PDF.</p>
+              <p className="section-label">{currentQr.eyebrow}</p>
+              <h3>{currentQr.heading}</h3>
+              <p className="resume-qr-blurb">{currentQr.description}</p>
+              <div className="qr-trigger-row" role="group" aria-label="Choose which link to encode in the QR code">
+                <button
+                  type="button"
+                  className={`qr-trigger-btn${activeQr === 'resume' ? ' is-active' : ''}`}
+                  aria-pressed={activeQr === 'resume'}
+                  onClick={() => setActiveQr('resume')}
+                >
+                  Résumé
+                </button>
+                <button
+                  type="button"
+                  className={`qr-trigger-btn${activeQr === 'linkedin' ? ' is-active' : ''}`}
+                  aria-pressed={activeQr === 'linkedin'}
+                  onClick={() => setActiveQr('linkedin')}
+                >
+                  LinkedIn
+                </button>
+                <button
+                  type="button"
+                  className={`qr-trigger-btn${activeQr === 'github' ? ' is-active' : ''}`}
+                  aria-pressed={activeQr === 'github'}
+                  onClick={() => setActiveQr('github')}
+                >
+                  GitHub
+                </button>
+                <button
+                  type="button"
+                  className={`qr-trigger-btn${activeQr === 'portfolio' ? ' is-active' : ''}`}
+                  aria-pressed={activeQr === 'portfolio'}
+                  onClick={() => setActiveQr('portfolio')}
+                >
+                  Portfolio
+                </button>
+              </div>
             </div>
-            <div className="resume-qr-code" aria-label="Resume download QR code">
-              <QRCodeErrorBoundary>
-                <QRCodeSVG
-                  value={resumeQrValue}
-                  size={116}
-                  marginSize={2}
-                  bgColor={theme === 'dark' ? '#0d1830' : 'transparent'}
-                  fgColor={theme === 'dark' ? '#f8fbff' : '#2e1065'}
-                />
-              </QRCodeErrorBoundary>
+            <div
+              className="resume-qr-code resume-qr-panel"
+              aria-live="polite"
+              aria-label={`QR code: ${currentQr.heading}`}
+            >
+              <div className="resume-qr-frame" key={activeQr}>
+                <QRCodeErrorBoundary>
+                  <QRCodeSVG
+                    value={currentQr.value || ' '}
+                    size={124}
+                    marginSize={2}
+                    bgColor={theme === 'dark' ? '#0d1830' : '#ffffff'}
+                    fgColor={theme === 'dark' ? '#f8fbff' : '#2e1065'}
+                  />
+                </QRCodeErrorBoundary>
+              </div>
+              <span className="qr-scan-hint">{currentQr.hint}</span>
+              <p className="qr-encode-url">{currentQr.value}</p>
             </div>
           </div>
           <div className="kpi-row">
@@ -1434,7 +1552,7 @@ function App() {
           </p>
           <div className="contact-social-icons" aria-label="Social links">
             <a
-              href="https://linkedin.com/in/puskarkafle"
+              href={LINKEDIN_URL}
               target="_blank"
               rel="noreferrer"
               className="social-icon-btn"
@@ -1494,7 +1612,7 @@ function App() {
               Call: +1 (806) 441-9487
             </a>
             <a
-              href="https://linkedin.com/in/puskarkafle"
+              href={LINKEDIN_URL}
               target="_blank"
               rel="noreferrer"
               className="btn btn-ghost"
