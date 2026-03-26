@@ -1418,7 +1418,8 @@ function App() {
         </main>
 
         <footer>
-          <p>© {new Date().getFullYear()} Puskar Kafle · Portfolio</p>
+          <p>© 2026 Puskar Kafle · Portfolio</p>
+          <p className="footer-tech">Made using React, Vite, JavaScript, and CSS</p>
         </footer>
       </div>
     </>

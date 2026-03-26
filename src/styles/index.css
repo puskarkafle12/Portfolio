@@ -1745,6 +1745,12 @@ footer {
   background: var(--footer-bg);
 }
 
+.footer-tech {
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  opacity: 0.95;
+}
+
 .theme-toggle {
   border: 1px solid var(--border);
   background: var(--card-bg);
