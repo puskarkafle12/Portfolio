@@ -6,13 +6,14 @@ export function useTheme() {
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
-      const initial = saved === 'dark' ? 'dark' : 'light'
+      // Default to dark mode when no saved preference exists.
+      const initial = saved === 'light' ? 'light' : 'dark'
       if (typeof document !== 'undefined') {
         document.documentElement.setAttribute('data-theme', initial)
       }
       return initial
     } catch {
-      return 'light'
+      return 'dark'
     }
   })
 
